@@ -1,6 +1,10 @@
+import sys
 import os
 
-print(os.getcwd())
+module_path = os.path.abspath(os.path.join('..'))
+if module_path not in sys.path:
+    sys.path.append(module_path)
+
 import pandas as pd
 
 import config
@@ -31,9 +35,8 @@ df_snli['e'] = df_snli['e'].fillna(0)
 df_snli['c'] = df_snli['c'].fillna(0)
 
 #personal ground truth of annotator that came up with hypothesis
+#is first label in list of old_labels
 df_snli['ground_truth'] = df_snli['old_labels'].str[0].str[0]
 
 
 df_snli.to_csv('../data/final/snli-clean.csv')
-
-print("data saved to ../data/final/snli-clean.csv")
