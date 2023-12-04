@@ -220,7 +220,7 @@ def max_posterior_label(tau):
 CB_color_cycle = {0:'#377eb8', 1:'#ff7f00', 2:'#4daf4a',
                   3:'#f781bf', 4:'#a65628', 5:'#984ea3',
                   6:'#999999', 7:'#e41a1c', 8:'#dede00'}
-def base_plot(scale=100, fontsize=12):
+def base_plot(scale=100, fontsize=12, size=6):
     '''
     Generates a base ternary plot with the given scale and fontsize
     :param scale: maximum value of the plot
@@ -229,7 +229,7 @@ def base_plot(scale=100, fontsize=12):
     '''
     #function to generate base ternary plot
     figure, tax = ternary.figure(scale=scale)
-    figure.set_size_inches(6, 6)
+    figure.set_size_inches(size, size)
     midpoint = (33.33, 33.33, 33.33)
     tax.line((50,50,0), midpoint, color="black")
     tax.line((0,50,50), midpoint, color="black")
@@ -240,6 +240,7 @@ def base_plot(scale=100, fontsize=12):
     tax.left_corner_label("contradiction", fontsize=fontsize)
     tax.boundary()
     tax.gridlines(multiple=10)
+    tax.get_axes().axis('off')
     tax.ticks(axis='lbr', linewidth=1, multiple=10)
     tax.clear_matplotlib_ticks()
     return figure, tax
@@ -296,15 +297,16 @@ def col_to_label(tau):
         return 'neutral'
     elif pd.Series(np.argmax(tau, axis=1)).map(CB_color_cycle) == '#4daf4a':
         return 'contradiction'
-def ternary_plot(Y, tau, pi, theta, all=True, bounds=True, bounds_col=CB_color_cycle[7], alpha = 0.5):
+def ternary_plot(Y, tau, pi, theta, scatter_visible = True, all=True, bounds=True, bounds_col=CB_color_cycle[7], alpha = 0.5):
     figure, tax = base_plot()
 
-    if all:
-        Y_all = create_all_labels(100)
-        tau_all = MultinomialExpectationMaximizer(K=3)._e_step(Y_all, pi=pi, theta=theta)
-        tax.scatter(Y_all, c=pd.Series(np.argmax(tau_all, axis=1)).map(CB_color_cycle))
-    else:
-        tax.scatter(Y, c=pd.Series(np.argmax(tau, axis=1)).map(CB_color_cycle), alpha = alpha)
+    if scatter_visible:
+        if all:
+            Y_all = create_all_labels(100)
+            tau_all = MultinomialExpectationMaximizer(K=3)._e_step(Y_all, pi=pi, theta=theta)
+            tax.scatter(Y_all, c=pd.Series(np.argmax(tau_all, axis=1)).map(CB_color_cycle))
+        else:
+            tax.scatter(Y, c=pd.Series(np.argmax(tau, axis=1)).map(CB_color_cycle), alpha = alpha)
 
     if bounds:
         bounds = get_boundaries(pi=pi, theta=theta)
