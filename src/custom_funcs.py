@@ -98,7 +98,8 @@ class MultinomialExpectationMaximizer:
             loss -= np.sum(weights * np.log(weights))
         return loss
 
-    # initialize pi as uniform distribution, thetha (= confusion values) as dirichlet since its the cojugate prior to a multinomial
+    # initialize pi as uniform distribution, theta (= confusion values) as dirichlet since its the conjugate prior to
+    # a multinomial
     def _init_params(self, C):
         pi = np.array([1 / self._K] * self._K)
         theta = dirichlet.rvs([2 * C] * C, self._K)
@@ -167,7 +168,7 @@ def sort_second_array(first_array, second_array):
 
 
 def tolerance_sort(array, tolerance, reverse=False):
-    '''
+    """
     Sorts an array by the first column, but only if the difference between the rows is more than the tolerance.
     Otherwise, tolerance_sort by the next column.
     Usually, tolerance sorting is only needed if more latent classes should be estimated than observed classes.
@@ -176,7 +177,7 @@ def tolerance_sort(array, tolerance, reverse=False):
     :param tolerance: tolerance for regular sorting
     :param reverse: sort descending if TRUE, ascending otheriwse
     :return: sorted array, matched index
-    '''
+    """
     array_sorted = np.copy(array[np.lexsort((array[:, 1], array[:, 0]))])
     sort_range = [0]
     for i in range(array.shape[0] - 1):
@@ -197,11 +198,11 @@ def tolerance_sort(array, tolerance, reverse=False):
 
 
 def max_posterior_label(tau):
-    '''
+    """
     Returns the label with the highest posterior probability
     :param tau: input array of posterior probabilities
     :return: discrete label of highest posterior probability
-    '''
+    """
     ncol = np.shape(tau)[1]
     z_int = np.argmax(tau, axis=1)
 
@@ -230,12 +231,12 @@ CB_color_cycle = {0: '#377eb8', 1: '#ff7f00', 2: '#4daf4a',
 
 
 def base_plot(scale=100, fontsize=12, size=6, multiple=10, tick_fontsize=12, tick_offset=0.02, label_offset=0):
-    '''
+    """
     Generates a base ternary plot with the given scale and fontsize
     :param scale: maximum value of the plot
     :param fontsize: fontsize of the labels
     :return: figure and tax object
-    '''
+    """
     # function to generate base ternary plot
     figure, tax = ternary.figure(scale=scale)
     figure.set_size_inches(size, size)

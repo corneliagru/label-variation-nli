@@ -3,9 +3,10 @@
 import numpy as np
 import random
 
-from src.custom_funcs import run_em, tolerance_sort, get_boundaries
+from src.custom_funcs import run_em, tolerance_sort, get_boundaries, base_plot
 
-def bootstrap(Y, N = len(Y),  K=3, B=50):
+
+def bootstrap(Y, N=None, K=3, B=50, seed=12):
     """
     Each input is numpy array:
     Y: (N x C), data points
@@ -24,12 +25,15 @@ def bootstrap(Y, N = len(Y),  K=3, B=50):
     B_tau = []
     B_bounds = []
 
+    if N is None:
+        N = Y.shape[0]
+
+    random.seed(seed)
     for b in range(B):
 
-        if b%10 == 0:
+        if b % 10 == 0:
             print('Bootstrap iteration: ', b)
 
-        random.seed(12+b)
         sample = np.array(random.choices(Y, k=N))
         em_result = run_em(sample, K=K)
 
@@ -52,26 +56,24 @@ def bootstrap(Y, N = len(Y),  K=3, B=50):
 
     return {'pi': B_pi, 'theta': B_theta, 'tau': B_tau, 'sample': B_sample, 'bounds': B_bounds}
 
-
 # N, C = Y.shape
-    # pi = np.zeros((B, K))
-    # theta = np.zeros((B, K, C))
-    # tau = np.zeros((B, N, K))
-    #
-    # for b in range(B):
-    #     # Sample with replacement
-    #     Y_b = np.zeros((N, C))
-    #     for n in range(N):
-    #         Y_b[n] = Y[random.randint(0, N - 1)]
-    #
-    #     # Run EM
-    #     em = EM(K=K)
-    #     _, pi_b, theta_b, tau_b = em.fit(Y_b)
-    #
-    #     # Save results
-    #     pi[b] = pi_b
-    #     theta[b] = theta_b
-    #     tau[b] = tau_b
-    #
-    # return pi, theta, tau
-
+# pi = np.zeros((B, K))
+# theta = np.zeros((B, K, C))
+# tau = np.zeros((B, N, K))
+#
+# for b in range(B):
+#     # Sample with replacement
+#     Y_b = np.zeros((N, C))
+#     for n in range(N):
+#         Y_b[n] = Y[random.randint(0, N - 1)]
+#
+#     # Run EM
+#     em = EM(K=K)
+#     _, pi_b, theta_b, tau_b = em.fit(Y_b)
+#
+#     # Save results
+#     pi[b] = pi_b
+#     theta[b] = theta_b
+#     tau[b] = tau_b
+#
+# return pi, theta, tau
