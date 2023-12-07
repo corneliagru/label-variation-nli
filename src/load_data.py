@@ -9,7 +9,7 @@ import pandas as pd
 
 import config
 
-from custom_funcs import load_data_as_df
+from model_funcs import load_data_as_df
 
 
 # load jsonl as df
