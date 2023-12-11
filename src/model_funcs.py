@@ -3,10 +3,16 @@ from scipy.stats import multinomial, dirichlet
 import numpy as np
 import pandas as pd
 
+
 # python-ternary needed
 
 
 def load_data_as_df(data_file):
+    """
+    Loads data from jsonl file into pandas dataframe
+    :param data_file: file path to jsonl file
+    :return: pandas dataframe
+    """
     d_list = common.load_jsonl(data_file)
     collected_data_dict = list_dict_data_tool.list_to_dict(d_list, key_fields='uid')
     df = pd.DataFrame.from_dict(collected_data_dict, orient='index')
@@ -21,6 +27,13 @@ class MultinomialExpectationMaximizer:
         self._restarts = restarts
 
     def log_lh(self, Y, pi, theta):
+        """
+        Computes log likelihood of the data given the model
+        :param Y: data
+        :param pi: pi parameter of multinomial
+        :param theta: theta parameter of multinomial
+        :return: log likelihood
+        """
         mn_probs = np.zeros(Y.shape[0])
         for k in range(theta.shape[0]):
             mn_probs_k = pi[k] * self._multinomial_prob(Y, theta[k])
@@ -30,12 +43,12 @@ class MultinomialExpectationMaximizer:
 
     def _multinomial_prob(self, counts, theta):
         """
-        counts: (C), vector of counts
-        theta: (C), vector of multinomial parameters
-
-        Returns:
-        p: (1), probability of the observation given the respective theta
+        Computes multinomial probability
+        :param counts: vector of counts of dimension (C)
+        :param theta: theta vector of multinomial parameters of dimension (C)
+        :return: probability of the observation given the respective theta
         """
+
         n = counts.sum(axis=-1)
         m = multinomial(n, theta)
         return m.pmf(counts)
@@ -43,13 +56,12 @@ class MultinomialExpectationMaximizer:
     def _e_step(self, Y, pi, theta):
         """
         Performs E-step, i.e., computes posterior probability as ((prior * likelihood)/evidence)
-        Y: (N x C), data points
-        pi: (K), mixture weights
-        theta: (K x C), multinomial probabilities
-
-        Returns:
-        tau: (N x K), probabilities of classes for objects
+        :param Y: data points of dimension (N x C)
+        :param pi: pi parameter, i.e., mixture weights of dimension (K)
+        :param theta: theta parameter, i.e., multinomial probabilities of dimension (K x C)
+        :return: tau: probabilities of classes for data points of dimension (N x K)
         """
+
         # Compute tau
         N = Y.shape[0]
         K = pi.shape[0]
@@ -64,14 +76,13 @@ class MultinomialExpectationMaximizer:
 
     def _m_step(self, Y, tau):
         """
-        Performs M-step, i.e., pi is relative posterior (tau) of all votes (Y)
-        Y: (N x C), data points
-        tau: (N x K), probabilities of classes for objects
-
-        Returns:
-        pi: (K), mixture weights
-        theta: (K x C), multinomial probabilities
+        Performs M-step, recomputes parameters given posterior classes,
+        i.e., new pi is relative frequency of posterior class (tau) of all votes (Y)
+        :param Y: data points of dimension (N x C)
+        :param tau: probabilities of classes for data points of dimension (N x K)
+        :return: pi, theta. pi: mixture weights of dimension (K), theta: multinomial probabilities of dimension (K x C)
         """
+
         # Compute pi
         pi = tau.sum(axis=0) / tau.sum()
 
@@ -83,12 +94,14 @@ class MultinomialExpectationMaximizer:
 
     def _compute_loss(self, Y, pi, theta, tau):
         """
-        Each input is numpy array:
-        Y: (N x C), data points
-        pi: (K), mixture component weights
-        theta: (K x C), multinomial categories weights
-        tau: (N x K), probabilities of clusters for objects
+        Computes loss of the model given the data and parameters. Each input is a numpy array.
+        :param Y: data points of dimension (N x C)
+        :param pi: pi parameter, i.e., mixture weights of dimension (K)
+        :param theta: theta parameter, i.e., multinomial probabilities of dimension (K x C)
+        :param tau: tau parameter, i.e., probabilities of classes for data points of dimension (N x K)
+        :return:
         """
+
         loss = 0
         for k in range(pi.shape[0]):
             weights = tau[:, k]
@@ -99,11 +112,24 @@ class MultinomialExpectationMaximizer:
     # initialize pi as uniform distribution, theta (= confusion values) as dirichlet since its the conjugate prior to
     # a multinomial
     def _init_params(self, C):
+        """
+        Initializes parameters for EM algorithm. pi is initialized as equal probabilities, i.e., 1/K ,
+        theta (= confusion values) is sampled K (number of latent classes) times from a dirichlet since it's the
+        conjugate prior to a multinomial.
+        Parameter alpha has C entries, where each value is 2·C. C is the number of observed classes in the data.
+        :param C: number of observed classes in data
+        :return: pi, theta
+        """
         pi = np.array([1 / self._K] * self._K)
         theta = dirichlet.rvs([2 * C] * C, self._K)
         return pi, theta
 
     def _train_once(self, Y):
+        """
+        Trains the model once. Initializes parameters, then performs E-step and M-step until convergence.
+        :param Y: data points of dimension (N x C)
+        :return: pi, theta, tau, loss
+        """
         loss = float('inf')
         C = Y.shape[1]
         pi, theta = self._init_params(C)
@@ -118,6 +144,11 @@ class MultinomialExpectationMaximizer:
         return pi, theta, tau, loss
 
     def fit(self, Y):
+        """
+        Fits the model to the data. Performs training multiple times (restarts) and returns the best model.
+        :param Y: data points of dimension (N x C)
+        :return: best_loss, best_pi, best_theta, best_tau
+        """
         best_loss = -float('inf')
         best_pi = None
         best_theta = None
@@ -135,6 +166,12 @@ class MultinomialExpectationMaximizer:
 
 
 def run_em(Y, K=3):
+    """
+    Runs EM algorithm on data Y with K latent classes. Returns the best model.
+    :param Y: data points of dimension (N x C)
+    :param K: number of latent classes
+    :return: likelihoods, best_pi, best_theta, best_tau
+    """
     likelihoods = []
     best_pi = None
     best_theta = None
@@ -148,21 +185,7 @@ def run_em(Y, K=3):
     best_theta = theta
     best_tau = tau
 
-    # print('best_pi: %s' % str(best_pi))
-    # print('best_theta: %s' % str(best_theta))
-
     return likelihoods, best_pi, best_theta, best_tau
-
-
-# Label matching
-# based on rel. frequency and estimated pi should be sufficient
-def sort_second_array(first_array, second_array):
-    r = np.argsort(first_array)
-    p = np.argsort(second_array)
-
-    matched_index = [x for _, x in sorted(zip(r, p))]
-
-    return matched_index
 
 
 def tolerance_sort(array, tolerance, reverse=False):
@@ -221,5 +244,3 @@ def max_posterior_label(tau):
                                            np.where(z_int == 3, 'nc',
                                                     np.where(z_int == 4, 'c', z_int)))))
     return z_hat
-
-
