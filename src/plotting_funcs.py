@@ -10,10 +10,12 @@ CB_color_cycle = {0: '#377eb8', 1: '#ff7f00', 2: '#4daf4a',
                   6: '#999999', 7: '#e41a1c', 8: '#dede00'}
 
 
-def plot_ternary_axes(scale=100, fontsize=12, size=6, multiple=10, tick_fontsize=12, tick_offset=0.02, label_offset=0,
-                      labels=["entailment", "neutral", "contradiction"], weight='normal'):
+def plot_ternary_axes(scale=100, fontsize=12, size=6, multiple=10, multiple_grid=10,  tick_fontsize=12,
+                      tick_offset=0.02, label_offset=0, labels=["entailment", "neutral", "contradiction"],
+                      weight='normal'):
     """
     Generates a base ternary plot
+    :param multiple_grid: which multiple of the grid should be plotted
     :param scale: maximum possible value of the plot
     :param fontsize: fontsize of the labels
     :param size: size of plot in inches
@@ -38,7 +40,7 @@ def plot_ternary_axes(scale=100, fontsize=12, size=6, multiple=10, tick_fontsize
     tax.top_corner_label(labels[1], fontsize=fontsize, weight=weight)
     tax.left_corner_label(labels[2], fontsize=fontsize, offset=label_offset, weight=weight)
     tax.boundary()
-    tax.gridlines(multiple=multiple)
+    tax.gridlines(multiple=multiple_grid)
     tax.get_axes().axis('off')
     tax.ticks(axis='lbr', linewidth=1, multiple=multiple, fontsize=tick_fontsize, offset=tick_offset)
     tax.clear_matplotlib_ticks()
