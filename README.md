@@ -1,5 +1,9 @@
-# label-variation-nli
-Code used in More Labels or Cases? Assessing Label Variation in Natural Language Inference. 
+# More Labels or Cases? Assessing Label Variation in Natural Language Inference.
+
+In this work, we analyze the uncertainty that is inherently present in the labels used for supervised machine learning in natural language inference (NLI). In cases where multiple annotations per instance are available, neither the majority vote nor the frequency of individual class votes is a trustworthy representation of the labeling uncertainty. 
+We propose modeling the votes via a Bayesian mixture model to recover the data-generating process, i.e., the posterior distribution of the ``true'' latent classes, and thus gain insight into the class variations. This will enable a better understanding of the confusion happening during the annotation process. We also assess the stability of the proposed estimation procedure by systematically varying the numbers of i) instances and ii) labels. Thereby, we observe that few instances with many labels can predict the latent class borders reasonably well, while the estimation fails for many instances with only a few labels. This leads us to conclude that multiple labels are a crucial building block for properly analyzing label uncertainty.
+
+## Repository
 
 The file structure of this project is as follows:
 
