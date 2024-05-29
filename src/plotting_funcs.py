@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+# see https://github.com/marcharper/python-ternary for installation
 import ternary
 from sympy import symbols, solve
 
